@@ -1,0 +1,7 @@
+include_dir(../lib/)
+include_dir(../lib/freetype/include/)
+build_exe(physarum.exe, main.cpp ../lib/ui.cpp ../lib/math2.cpp ../lib/graphics.cpp ../lib/font.cpp ../lib/memory.cpp ../lib/input.cpp ../lib/logging.cpp ../lib/file_system.cpp ../lib/platform.cpp ../lib/random.cpp)
+libs(kernel32.lib user32.lib gdi32.lib D3D11.lib dxguid.lib d3dcompiler.lib DXGI.lib XAudio2.lib Ole32.lib ../lib/freetype/win64/freetype271MT.lib)
+copy(../lib/shaders/*, $BIN)
+copy(../lib/fonts/*, $BIN)
+copy(shaders/*, $BIN)
