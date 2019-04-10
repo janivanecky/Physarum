@@ -103,9 +103,9 @@ int main(int argc, char **argv)
     ConstantBuffer config_buffer = graphics::get_constant_buffer(sizeof(Config));
 
     // Textures for the simulation
-    Texture trail_tex_A = graphics::get_texture(NULL, world_width, world_height, DXGI_FORMAT_R32_FLOAT, 4);
-    Texture trail_tex_B = graphics::get_texture(NULL, world_width, world_height, DXGI_FORMAT_R32_FLOAT, 4);
-    Texture occ_tex = graphics::get_texture(NULL, world_width, world_height, DXGI_FORMAT_R32_UINT, 4);
+    Texture2D trail_tex_A = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_FLOAT, 4);
+    Texture2D trail_tex_B = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_FLOAT, 4);
+    Texture2D occ_tex = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_UINT, 4);
     TextureSampler tex_sampler = graphics::get_texture_sampler();
     bool is_a = true;
 
