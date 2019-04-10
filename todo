@@ -5,9 +5,22 @@ DOING
 ====================
 TODO
 ====================
-- optimize further
-- 3D
+- cleanup particle_shader_3d.hlsl
+- optimize further - check numthreads + how should particle indexing be done!
 
 ====================
 DONE
 ====================
+
+9/4/2019
+- D3D object release for 3D
+- Debug speed issues
+
+8/4/2019
+- F3 to pause simulation
+- 3D rendering, change cube  orientation based on camera position
+
+6/4/2019
+- particles accumulating in the corner
+    - was because of invalid inputs to atan2/acos - zero vector
+- 3D

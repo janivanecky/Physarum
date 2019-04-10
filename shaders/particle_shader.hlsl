@@ -1,9 +1,8 @@
 RWTexture2D<float> tex_in: register(u0);
-RWTexture2D<float> tex_out: register(u1);
 RWTexture2D<uint> tex_occ: register(u3);
 
 struct Particle {
-    float x; float y; float theta; float info;
+    float x; float y; float theta; float pad;
 };
 
 RWStructuredBuffer<Particle> particles: register(u2);
@@ -31,11 +30,10 @@ cbuffer ConfigBuffer : register(b0)
 };
 
 [numthreads(10,10,10)]
-void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
-          uint3 dispatchThreadId : SV_DispatchThreadID){
+void main(uint3 dispatchThreadId : SV_DispatchThreadID){
     uint idx = dispatchThreadId.x * 10000 + dispatchThreadId.y * 100 + dispatchThreadId.z;
-    const int WIDTH = 1200;
-    const int HEIGHT = 800;
+    const int WIDTH = 250;
+    const int HEIGHT = 250;
 
     float x = particles[idx].x;
     float y = particles[idx].y;
@@ -44,7 +42,7 @@ void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
     float y_center = (HEIGHT / 2.0 - y);
     float d_center = x_center * x_center + y_center * y_center;
     d_center = sqrt(d_center);
-    float center_angle = atan2(y_center, x_center);
+    float center_angle = y_center == 0.0 && x_center == 0.0 ? t : atan2(y_center, x_center);
     float r = float(wang_hash(idx) % 1000.0) / 1000.0 * 0.5 + 0.5f;
 
     //float d_c = //sin(d_center / 20.0) * 0.5f + 0.5f;
@@ -106,6 +104,6 @@ void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
     particles[idx].y = y;
     particles[idx].theta = t;
 
-    tex_in[uint2(x, y)] += deposit_value;
+    tex_in[int2(x, y)] += deposit_value;
 }
 
