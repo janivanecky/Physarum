@@ -39,8 +39,8 @@ float random(int seed) {
 }
 
 [numthreads(10,10,10)]
-void main(uint3 dispatchThreadId : SV_DispatchThreadID){
-    uint idx = dispatchThreadId.x * 10000 + dispatchThreadId.y * 100 + dispatchThreadId.z;
+void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
+    uint idx = index + 1000 * (group_id.x + group_id.y * 10 + group_id.z * 100);
     const int WIDTH = 250;
     const int HEIGHT = 250;
     const int DEPTH = 250;
