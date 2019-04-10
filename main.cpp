@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     //uint32_t world_width = 600, world_height = 600, world_depth = 600;
     uint32_t world_width = 250, world_height = 250, world_depth = 250;
     float spawn_radius = 50.0f;
-    const int NUM_PARTICLES = 1000000;
+    const int NUM_PARTICLES = 500000;
     //#define _2D
 #ifdef _2D
     // Vertex shader
@@ -354,7 +354,7 @@ int main(int argc, char **argv)
                 graphics::set_texture_compute(&trail_tex_B, 0);
             }
             graphics::set_structured_buffer(&particles_buffer, 2);
-            graphics::run_compute(10, 10, 10);
+            graphics::run_compute(10, 10, 5);
             graphics::unset_texture_compute(0);
             graphics::unset_texture_compute(3);
         }
@@ -371,7 +371,7 @@ int main(int argc, char **argv)
                 graphics::set_texture_compute(&trail_tex_A, 1);
             }
             #ifdef _2D
-            graphics::run_compute(world_width, world_height, 1);
+            graphics::run_compute(world_width / 10, world_height / 10, 1);
             #else
             graphics::run_compute(world_width / 10, world_height / 10, world_depth / 10);
             #endif

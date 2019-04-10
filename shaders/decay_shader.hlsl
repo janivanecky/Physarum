@@ -11,7 +11,7 @@ cbuffer ConfigBuffer : register(b0)
     float decay_factor;
 };
 
-[numthreads(1,1,1)]
+[numthreads(10,10,1)]
 void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
           uint3 dispatchThreadId : SV_DispatchThreadID){
     uint2 p = dispatchThreadId.xy;
