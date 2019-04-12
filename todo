@@ -5,12 +5,15 @@ DOING
 ====================
 TODO
 ====================
+- optimize further
+- update README with 3D
 - cleanup particle_shader_3d.hlsl
-- optimize further - check numthreads + how should particle indexing be done!
 
 ====================
 DONE
 ====================
+11/4/2019
+- optimize AoS -> AoS for particle array
 
 9/4/2019
 - D3D object release for 3D

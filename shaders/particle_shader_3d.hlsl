@@ -1,11 +1,11 @@
 RWTexture3D<float> tex_in: register(u0);
-RWTexture3D<uint> tex_occ: register(u3);
+RWTexture3D<uint> tex_occ: register(u1);
 
-struct Particle {
-    float x; float y; float z; float phi; float theta; float pad1; float pad2; float pad3;
-};
-
-RWStructuredBuffer<Particle> particles: register(u2);
+RWStructuredBuffer<float> particles_x: register(u2);
+RWStructuredBuffer<float> particles_y: register(u3);
+RWStructuredBuffer<float> particles_z: register(u4);
+RWStructuredBuffer<float> particles_phi: register(u5);
+RWStructuredBuffer<float> particles_theta: register(u6);
 
 uint wang_hash(uint seed)
 {
@@ -41,18 +41,17 @@ float random(int seed) {
 [numthreads(10,10,10)]
 void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint idx = index + 1000 * (group_id.x + group_id.y * 10 + group_id.z * 100);
-    const int WIDTH = 250;
-    const int HEIGHT = 250;
-    const int DEPTH = 250;
+    const int WIDTH = 400;
+    const int HEIGHT = 400;
+    const int DEPTH = 400;
     float halfpi = 3.1415 / 2.0f;
 
-    Particle particle = particles[idx];
-    float x = particle.x;
-    float y = particle.y;
-    float z = particle.z;
+    float x = particles_x[idx];
+    float y = particles_y[idx];
+    float z = particles_z[idx];
     
-    float t = particle.theta;
-    float ph = particle.phi;
+    float t = particles_theta[idx];
+    float ph = particles_phi[idx];
 
     float x_center = (WIDTH  / 2.0 - x);
     float y_center = (HEIGHT / 2.0 - y);
@@ -177,19 +176,18 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint val = 0;
     InterlockedCompareExchange(tex_occ[uint3(x, y, z)], 0, uint(collision), val);
     if (val == 1.0) {
-        x = particles[idx].x;
-        y = particles[idx].y;
-        z = particles[idx].z;
+        x = particles_x[idx];
+        y = particles_y[idx];
+        z = particles_z[idx];
         t = acos(2 * float(wang_hash(idx * uint(x) * uint(y) * uint(z) + 4) % 1000) / 1000.0 - 1);
         ph = float(wang_hash(idx * uint(x) * uint(y) * uint(z) + 12) % 1000) / 1000.0 * 3.1415 * 2.0;
     }
 
-    particle.x = x;
-    particle.y = y;
-    particle.z = z;
-    particle.theta = t;
-    particle.phi = ph;
-    particles[idx] = particle;
+    particles_x[idx] = x;
+    particles_y[idx] = y;
+    particles_z[idx] = z;
+    particles_theta[idx] = t;
+    particles_phi[idx] = ph;
 
     tex_in[uint3(x, y, z)] += deposit_value;
 }

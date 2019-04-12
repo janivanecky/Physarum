@@ -51,11 +51,11 @@ int main(int argc, char **argv)
     graphics::set_render_targets_viewport(&render_target_window, &depth_buffer);
 
     // Simulation params
-    //uint32_t world_width = 600, world_height = 600, world_depth = 600;
-    uint32_t world_width = 250, world_height = 250, world_depth = 250;
+    uint32_t world_width = 400, world_height = 400, world_depth = 400;
+    //uint32_t world_width = 250, world_height = 250, world_depth = 250;
     float spawn_radius = 50.0f;
-    const int NUM_PARTICLES = 500000;
-    //#define _2D
+    const int NUM_PARTICLES = 1000000;
+    #define _2D
 #ifdef _2D
     // Vertex shader
     File vertex_shader_file = file_system::read_file("vertex_shader.hlsl"); 
@@ -87,26 +87,29 @@ int main(int argc, char **argv)
     Texture2D occ_tex = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_UINT, 4);
 
     // Particles setup
-    struct Particle2D {
-        float x; float y; float theta; float pad;
-    };
-    Particle2D *particles = memory::alloc_heap<Particle2D>(NUM_PARTICLES);
+    float *particles_x = memory::alloc_heap<float>(NUM_PARTICLES);
+    float *particles_y = memory::alloc_heap<float>(NUM_PARTICLES);
+    float *particles_theta = memory::alloc_heap<float>(NUM_PARTICLES);
 
-    auto update_particles = [&world_width, &world_height](Particle2D *particles, int count, float spawn_radius) {
+    auto update_particles = [&world_width, &world_height](float *px, float *py, float *pt, int count, float spawn_radius) {
         for (int i = 0; i < count; ++i) {
             float angle = random::uniform(0, math::PI2);
             float radius = random::uniform(0, 1);
             radius = math::sqrt(radius) * spawn_radius;
-            particles[i].x = math::sin(angle) * radius + world_width / 2.0f;
-            particles[i].y = math::cos(angle) * radius + world_height / 2.0f;
-            particles[i].theta = random::uniform(0, math::PI2);
+            px[i] = math::sin(angle) * radius + world_width / 2.0f;
+            py[i] = math::cos(angle) * radius + world_height / 2.0f;
+            pt[i] = random::uniform(0, math::PI2);
         }
     };
-    update_particles(particles, NUM_PARTICLES, spawn_radius);
+    update_particles(particles_x, particles_y, particles_theta, NUM_PARTICLES, spawn_radius);
 
     // Set up buffer containing particle data
-    StructuredBuffer particles_buffer = graphics::get_structured_buffer(sizeof(Particle2D), NUM_PARTICLES);
-    graphics::update_structured_buffer(&particles_buffer, particles);
+    StructuredBuffer particles_buffer_x = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_x, particles_x);
+    StructuredBuffer particles_buffer_y = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_y, particles_y);
+    StructuredBuffer particles_buffer_theta = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_theta, particles_theta);
 
     Mesh quad_mesh = graphics::get_mesh(quad_vertices, quad_vertices_count, quad_vertices_stride, NULL, 0, 0);
 #else
@@ -146,25 +149,38 @@ int main(int argc, char **argv)
         float x; float y; float z; float phi; float theta; float pad1; float pad2; float pad3;
     };
     Particle3D *particles = memory::alloc_heap<Particle3D>(NUM_PARTICLES);
+    float *particles_x = memory::alloc_heap<float>(NUM_PARTICLES);
+    float *particles_y = memory::alloc_heap<float>(NUM_PARTICLES);
+    float *particles_z = memory::alloc_heap<float>(NUM_PARTICLES);
+    float *particles_phi = memory::alloc_heap<float>(NUM_PARTICLES);
+    float *particles_theta = memory::alloc_heap<float>(NUM_PARTICLES);
 
-    auto update_particles = [&world_width, &world_height, &world_depth](Particle3D *particles, int count, float spawn_radius) {
+    auto update_particles = [&world_width, &world_height, &world_depth](float *px, float *py, float *pz, float *pp, float *pt, int count, float spawn_radius) {
         for (int i = 0; i < count; ++i) {
             float phi = random::uniform(0, math::PI2);
             float theta = math::acos(2 * random::uniform(0, 1.0) - 1);
             float radius = random::uniform(0, 1);
             radius = math::pow(radius, 1.0f/3.0f) * spawn_radius;
-            particles[i].x = math::sin(phi) * math::sin(theta) * radius + world_width / 2.0f;
-            particles[i].y = math::cos(theta) * radius + world_height / 2.0f;
-            particles[i].z = math::cos(phi) * math::sin(theta) * radius + world_depth / 2.0f;
-            particles[i].theta = math::acos(2 * random::uniform(0, 1.0) - 1);
-            particles[i].phi = random::uniform(0, math::PI2);
+            px[i] = math::sin(phi) * math::sin(theta) * radius + world_width / 2.0f;
+            py[i] = math::cos(theta) * radius + world_height / 2.0f;
+            pz[i] = math::cos(phi) * math::sin(theta) * radius + world_depth / 2.0f;
+            pp[i] = math::acos(2 * random::uniform(0, 1.0) - 1);
+            pt[i] = random::uniform(0, math::PI2);
         }
     };
-    update_particles(particles, NUM_PARTICLES, spawn_radius);
+    update_particles(particles_x, particles_y, particles_z, particles_phi, particles_theta, NUM_PARTICLES, spawn_radius);
 
     // Set up buffer containing particle data
-    StructuredBuffer particles_buffer = graphics::get_structured_buffer(sizeof(Particle3D), NUM_PARTICLES);
-    graphics::update_structured_buffer(&particles_buffer, particles);
+    StructuredBuffer particles_buffer_x = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_x, particles_x);
+    StructuredBuffer particles_buffer_y = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_y, particles_y);
+    StructuredBuffer particles_buffer_z = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_z, particles_z);
+    StructuredBuffer particles_buffer_phi = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_phi, particles_phi);
+    StructuredBuffer particles_buffer_theta = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
+    graphics::update_structured_buffer(&particles_buffer_theta, particles_theta);
 
     // Set up 3D texture quad mesh.
     float super_quad_vertices_template[] = {
@@ -324,9 +340,16 @@ int main(int argc, char **argv)
             if (input::key_pressed(KeyCode::F2))
             {
                 // Reset particles + trails + occupancy map
-                update_particles(particles, NUM_PARTICLES, spawn_radius);
-
-                graphics::update_structured_buffer(&particles_buffer, particles);
+                #ifdef _2D
+                update_particles(particles_x, particles_y, particles_theta, NUM_PARTICLES, spawn_radius);
+                #else
+                update_particles(particles_x, particles_y, particles_z, particles_phi, particles_theta, NUM_PARTICLES, spawn_radius);
+                graphics::update_structured_buffer(&particles_buffer_z, particles_z);
+                graphics::update_structured_buffer(&particles_buffer_phi, particles_phi);
+                #endif
+                graphics::update_structured_buffer(&particles_buffer_x, particles_x);
+                graphics::update_structured_buffer(&particles_buffer_y, particles_y);
+                graphics::update_structured_buffer(&particles_buffer_theta, particles_theta);
                 float clear_tex[4] = {0, 0, 0, 0};
                 graphics_context->context->ClearUnorderedAccessViewFloat(trail_tex_A.ua_view, clear_tex);
                 graphics_context->context->ClearUnorderedAccessViewFloat(trail_tex_B.ua_view, clear_tex);
@@ -347,16 +370,26 @@ int main(int argc, char **argv)
             uint32_t clear_tex_uint[4] = {0, 0, 0, 0};
             float clear_tex[4] = {0, 0, 0, 0};
             graphics_context->context->ClearUnorderedAccessViewUint(occ_tex.ua_view, clear_tex_uint);
-            graphics::set_texture_compute(&occ_tex, 3);
+            graphics::set_texture_compute(&occ_tex, 1);
             if (is_a) {
                 graphics::set_texture_compute(&trail_tex_A, 0);
             } else {
                 graphics::set_texture_compute(&trail_tex_B, 0);
             }
-            graphics::set_structured_buffer(&particles_buffer, 2);
-            graphics::run_compute(10, 10, 5);
+            #ifdef _2D
+            graphics::set_structured_buffer(&particles_buffer_x, 2);
+            graphics::set_structured_buffer(&particles_buffer_y, 3);
+            graphics::set_structured_buffer(&particles_buffer_theta, 4);
+            #else
+            graphics::set_structured_buffer(&particles_buffer_x, 2);
+            graphics::set_structured_buffer(&particles_buffer_y, 3);
+            graphics::set_structured_buffer(&particles_buffer_z, 4);
+            graphics::set_structured_buffer(&particles_buffer_phi, 5);
+            graphics::set_structured_buffer(&particles_buffer_theta, 6);
+            #endif
+            graphics::run_compute(10, 10, 10);
             graphics::unset_texture_compute(0);
-            graphics::unset_texture_compute(3);
+            graphics::unset_texture_compute(1);
         }
 
         // Decay/diffusion
@@ -436,9 +469,13 @@ int main(int argc, char **argv)
     graphics::release(&trail_tex_B);
     graphics::release(&occ_tex);
     graphics::release(&tex_sampler);
-    graphics::release(&particles_buffer);
     graphics::release(&config_buffer);
+    graphics::release(&particles_buffer_x);
+    graphics::release(&particles_buffer_y);
+    graphics::release(&particles_buffer_theta);
     #ifndef _2D
+    graphics::release(&particles_buffer_z);
+    graphics::release(&particles_buffer_phi);
     graphics::release(&matrix_buffer);
     #endif
 

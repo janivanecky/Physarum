@@ -1,11 +1,10 @@
 RWTexture2D<float> tex_in: register(u0);
-RWTexture2D<uint> tex_occ: register(u3);
+RWTexture2D<uint> tex_occ: register(u1);
 
-struct Particle {
-    float x; float y; float theta; float pad;
-};
+RWStructuredBuffer<float> particles_x: register(u2);
+RWStructuredBuffer<float> particles_y: register(u3);
+RWStructuredBuffer<float> particles_theta: register(u4);
 
-RWStructuredBuffer<Particle> particles: register(u2);
 
 uint wang_hash(uint seed)
 {
@@ -32,12 +31,13 @@ cbuffer ConfigBuffer : register(b0)
 [numthreads(10,10,10)]
 void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint idx = index + 1000 * (group_id.x + group_id.y * 10 + group_id.z * 100);
-    const int WIDTH = 250;
-    const int HEIGHT = 250;
+    const int WIDTH = 400;
+    const int HEIGHT = 400;
 
-    float x = particles[idx].x;
-    float y = particles[idx].y;
-    float t = particles[idx].theta;
+    float x = particles_x[idx];
+    float y = particles_y[idx];
+    float t = particles_theta[idx];
+    
     float x_center = (WIDTH  / 2.0 - x);
     float y_center = (HEIGHT / 2.0 - y);
     float d_center = x_center * x_center + y_center * y_center;
@@ -95,14 +95,14 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint val = 0;
     InterlockedCompareExchange(tex_occ[uint2(x, y)], 0, uint(collision), val);
     if (val == 1.0) {
-        x = particles[idx].x;
-        y = particles[idx].y;
+        x = particles_x[idx];
+        y = particles_y[idx];
         t = float(wang_hash(idx * uint(x) * uint(y)) % 1000) / 1000.0 * 3.1415 * 2.0;       
     }
-
-    particles[idx].x = x;
-    particles[idx].y = y;
-    particles[idx].theta = t;
+    
+    particles_x[idx] = x;
+    particles_y[idx] = y;
+    particles_theta[idx] = t;
 
     tex_in[int2(x, y)] += deposit_value;
 }
