@@ -261,6 +261,10 @@ int main(int argc, char **argv)
         float decay_factor;
         float collision;
         float center_attraction;
+        int world_width;
+        int world_height;
+        int world_depth;
+        int filler;
     };
 
     Config config = {
@@ -272,6 +276,9 @@ int main(int argc, char **argv)
         0.32f,
         0.0f,
         0.5f,
+        int(world_width),
+        int(world_height),
+        int(world_depth),
     };
     ConstantBuffer config_buffer = graphics::get_constant_buffer(sizeof(Config));
 

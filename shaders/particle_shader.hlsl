@@ -26,20 +26,24 @@ cbuffer ConfigBuffer : register(b0)
     float decay_factor;
     float collision;
     float center_attraction;
+    int world_width;
+    int world_height;
+    int world_depth;
 };
+
+float mod(float x, float y) {
+     return x - y * floor(x / y);
+}
 
 [numthreads(10,10,10)]
 void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint idx = index + 1000 * (group_id.x + group_id.y * 10 + group_id.z * 100);
-    const int WIDTH = 400;
-    const int HEIGHT = 400;
-
     float x = particles_x[idx];
     float y = particles_y[idx];
     float t = particles_theta[idx];
     
-    float x_center = (WIDTH  / 2.0 - x);
-    float y_center = (HEIGHT / 2.0 - y);
+    float x_center = (world_width  / 2.0 - x);
+    float y_center = (world_height / 2.0 - y);
     float d_center = x_center * x_center + y_center * y_center;
     d_center = sqrt(d_center);
     float center_angle = y_center == 0.0 && x_center == 0.0 ? t : atan2(y_center, x_center);
@@ -80,17 +84,8 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     x += dp.x;
     y += dp.y;
 
-    // TODO: Make robust
-    if (y < 0) {
-        y = HEIGHT - 1;
-    } else if (y > HEIGHT - 1) {
-        y = 0;
-    } 
-    if (x < 0) {
-        x = WIDTH - 1;
-    } else if (x > WIDTH - 1) {
-        x = 0;
-    }
+    x = mod(x, world_width);
+    y = mod(y, world_height);
 
     uint val = 0;
     InterlockedCompareExchange(tex_occ[uint2(x, y)], 0, uint(collision), val);

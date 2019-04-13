@@ -27,6 +27,9 @@ cbuffer ConfigBuffer : register(b0)
     float decay_factor;
     float collision;
     float center_attraction;
+    int world_width;
+    int world_height;
+    int world_depth;
 };
 
 float3 rotate(float3 v, float3 a, float angle) {
@@ -38,12 +41,13 @@ float random(int seed) {
     return float(wang_hash(seed) % 1000) / 1000.0f;
 }
 
+float mod(float x, float y) {
+     return x - y * floor(x / y);
+}
+
 [numthreads(10,10,10)]
 void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint idx = index + 1000 * (group_id.x + group_id.y * 10 + group_id.z * 100);
-    const int WIDTH = 400;
-    const int HEIGHT = 400;
-    const int DEPTH = 400;
     float halfpi = 3.1415 / 2.0f;
 
     float x = particles_x[idx];
@@ -53,9 +57,9 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     float t = particles_theta[idx];
     float ph = particles_phi[idx];
 
-    float x_center = (WIDTH  / 2.0 - x);
-    float y_center = (HEIGHT / 2.0 - y);
-    float z_center = (DEPTH / 2.0 - z);
+    float x_center = (world_width  / 2.0 - x);
+    float y_center = (world_height / 2.0 - y);
+    float z_center = (world_depth / 2.0 - z);
     float3 d_center_v = float3(x_center, y_center, z_center);
     float d_center = length(d_center_v);
     float r = float(wang_hash(idx) % 1000.0) / 1000.0 * 0.5 + 0.5f;
@@ -156,22 +160,9 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     y += dp.y;
     z += dp.z;
 
-    // TODO: Make robust
-    if (y < 0) {
-        y = HEIGHT - 1;
-    } else if (y > HEIGHT - 1) {
-        y = 0;
-    } 
-    if (x < 0) {
-        x = WIDTH - 1;
-    } else if (x > WIDTH - 1) { 
-        x = 0;
-    }
-    if (z < 0) {
-        z = DEPTH - 1;
-    } else if (z > DEPTH - 1) {
-        z = 0;
-    }
+    x = mod(x, world_width);
+    y = mod(y, world_height);
+    z = mod(z, world_depth);
 
     uint val = 0;
     InterlockedCompareExchange(tex_occ[uint3(x, y, z)], 0, uint(collision), val);
