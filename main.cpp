@@ -31,7 +31,7 @@ uint32_t quad_vertices_count = 6;
 int main(int argc, char **argv)
 {
     // Set up window
-    uint32_t window_width = 800, window_height = 800;
+    uint32_t window_width = 600, window_height = 400;
  	Window window = platform::get_window("Physarum", window_width, window_height);
     assert(platform::is_window_valid(&window));
 
@@ -222,7 +222,8 @@ int main(int argc, char **argv)
     Mesh quad_mesh = graphics::get_mesh(super_quad_vertices, quad_vertices_count * world_depth, super_quad_vertices_stride, NULL, 0, 0);
 
     // Set up 3D rendering matrices buffer.
-    Matrix4x4 projection_matrix = math::get_perspective_projection_dx_rh(math::deg2rad(60.0f), 1.0f, 0.01f, 10.0f);
+    float aspect_ratio = float(window_width) / float(window_height);
+    Matrix4x4 projection_matrix = math::get_perspective_projection_dx_rh(math::deg2rad(60.0f), aspect_ratio, 0.01f, 10.0f);
     float azimuth = 0.0f;
     float polar = math::PIHALF;
     float radius = 2.0f;
@@ -281,6 +282,7 @@ int main(int argc, char **argv)
     bool is_running = true;
     bool show_ui = false;
     bool run_mold = true;
+    bool turning_camera = false;
     while(is_running)
     {
         printf("%f\n", timer::checkpoint(&timer));
@@ -313,6 +315,9 @@ int main(int argc, char **argv)
                 polar -= dm.y * 0.003f;
                 polar = math::clamp(polar, 0.02f, math::PI);
             }
+            if (turning_camera) {
+                azimuth += 0.01f;
+            }
             Vector3 eye_pos = Vector3(math::cos(azimuth) * math::sin(polar), math::cos(polar), math::sin(azimuth) * math::sin(polar)) * radius;
             Matrix4x4 view_matrix = math::get_look_at(eye_pos, Vector3(0,0,0), Vector3(0,1,0));
             matrices.view = view_matrix;
@@ -334,6 +339,7 @@ int main(int argc, char **argv)
 
             graphics::update_constant_buffer(&matrix_buffer, &matrices);
             if (input::key_pressed(KeyCode::F4)) matrices.show_grid = !matrices.show_grid;
+            if (input::key_pressed(KeyCode::F5)) turning_camera = !turning_camera;
             #endif
             if (input::key_pressed(KeyCode::ESC)) is_running = false; 
             if (input::key_pressed(KeyCode::F1)) show_ui = !show_ui; 
