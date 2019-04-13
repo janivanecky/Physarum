@@ -17,6 +17,7 @@ cbuffer ConfigBuffer : register(b4)
     float4x4 view_matrix;
     float4x4 model_matrix;
 	int texcoord_map;
+	int show_grid;
 };
 
 VertexOutput main(VertexInput input)

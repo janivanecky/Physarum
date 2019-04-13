@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     //uint32_t world_width = 250, world_height = 250, world_depth = 250;
     float spawn_radius = 50.0f;
     const int NUM_PARTICLES = 1000000;
-    #define _2D
+    //#define _2D
 #ifdef _2D
     // Vertex shader
     File vertex_shader_file = file_system::read_file("vertex_shader.hlsl"); 
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
         Matrix4x4 view;
         Matrix4x4 model;
         int texcoord_map;
-        int filler1;
+        int show_grid;
         int filler2;
         int filler3;
     };
@@ -333,6 +333,7 @@ int main(int argc, char **argv)
             }
 
             graphics::update_constant_buffer(&matrix_buffer, &matrices);
+            if (input::key_pressed(KeyCode::F4)) matrices.show_grid = !matrices.show_grid;
             #endif
             if (input::key_pressed(KeyCode::ESC)) is_running = false; 
             if (input::key_pressed(KeyCode::F1)) show_ui = !show_ui; 

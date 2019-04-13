@@ -8,10 +8,16 @@ TODO
 - optimize further
 - update README with 3D
 - cleanup particle_shader_3d.hlsl
+- WIDTH/HEIGHT/DEPTH as constants to shaders
+- thread size multiple of warp size
+- flatten group count and group sizes
 
 ====================
 DONE
 ====================
+12/4/2019
+- add grid over 3D texture
+
 11/4/2019
 - optimize AoS -> AoS for particle array
 
