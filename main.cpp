@@ -31,7 +31,7 @@ uint32_t quad_vertices_count = 6;
 int main(int argc, char **argv)
 {
     // Set up window
-    uint32_t window_width = 600, window_height = 400;
+    uint32_t window_width = 1200, window_height = 800;
  	Window window = platform::get_window("Physarum", window_width, window_height);
     assert(platform::is_window_valid(&window));
 
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     uint32_t world_width = 400, world_height = 400, world_depth = 400;
     //uint32_t world_width = 250, world_height = 250, world_depth = 250;
     float spawn_radius = 50.0f;
-    const int NUM_PARTICLES = 1000000;
+    const int NUM_PARTICLES = 500000;
     //#define _2D
 #ifdef _2D
     // Vertex shader
@@ -394,7 +394,7 @@ int main(int argc, char **argv)
             graphics::set_structured_buffer(&particles_buffer_phi, 5);
             graphics::set_structured_buffer(&particles_buffer_theta, 6);
             #endif
-            graphics::run_compute(10, 10, 10);
+            graphics::run_compute(10, 10, 5);
             graphics::unset_texture_compute(0);
             graphics::unset_texture_compute(1);
         }
@@ -431,10 +431,25 @@ int main(int argc, char **argv)
             } else {
                 graphics::set_texture(&trail_tex_A, 0);
             }
-            
             graphics::set_texture_sampler(&tex_sampler, 0);
+            #ifdef _2D
+            graphics::draw_mesh(&quad_mesh);
+            #else
+            matrices.model = math::get_rotation(math::PIHALF, Vector3(0, 1, 0));
+            matrices.texcoord_map = 2;
+            graphics::update_constant_buffer(&matrix_buffer, &matrices);
+            graphics::draw_mesh(&quad_mesh);
+            
+            matrices.model = math::get_rotation(-math::PIHALF, Vector3(1, 0, 0));
+            matrices.texcoord_map = 1;
+            graphics::update_constant_buffer(&matrix_buffer, &matrices);
             graphics::draw_mesh(&quad_mesh);
 
+            matrices.model = math::get_identity();
+            matrices.texcoord_map = 0;
+            graphics::update_constant_buffer(&matrix_buffer, &matrices);
+            graphics::draw_mesh(&quad_mesh);
+            #endif
             graphics::unset_texture(0);
         }
 

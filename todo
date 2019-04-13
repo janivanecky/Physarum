@@ -7,7 +7,6 @@ TODO
 ====================
 - optimize further
 - update README with 3D
-- solve sudden changes in 3D texture when rotation changes
 - cleanup particle_shader_3d.hlsl
 - WIDTH/HEIGHT/DEPTH as constants to shaders
 - thread size multiple of warp size
@@ -16,6 +15,9 @@ TODO
 ====================
 DONE
 ====================
+13/4/2019
+- solve abrupt changes in 3D texture rendering when cube rotation changes
+
 12/4/2019
 - add auto-rotation of camera
 - add grid over 3D texture
