@@ -63,6 +63,7 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     float3 d_center_v = float3(x_center, y_center, z_center);
     float d_center = length(d_center_v);
     float r = float(wang_hash(idx) % 1000.0) / 1000.0 * 0.5 + 0.5f;
+    int3 p = int3(x, y, z);
 
     //float d_c = //sin(d_center / 20.0) * 0.5f + 0.5f;
     float d_c = 1.0;//1.0 - clamp((d_center - 50.0) / 150.0, 0, 1.0);
@@ -73,76 +74,34 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     float3 dc = float3(sin(tc) * cos(pc), cos(tc), sin(tc) * sin(pc)) * sense_distance * d_c * r;
     float3 axis = normalize(dc);
     float3 dd = float3(sin(dt) * cos(pc), cos(dt), sin(dt) * sin(pc));// * sense_distance * d_c * r;
-    float lca = random(idx * 42) * 3.1415 - halfpi;
-    float rca = lca + 3.1415;
-    float cla = lca + halfpi;
-    float cra = lca -halfpi;
-    float3 dlc = rotate(dd, axis, lca) * sense_distance * d_c * r;
-    float3 drc = rotate(dd, axis, rca) * sense_distance * d_c * r;
-    float3 dcl = rotate(dd, axis, cla) * sense_distance * d_c * r;
-    float3 dcr = rotate(dd, axis, cra) * sense_distance * d_c * r;
+    float start_angle = random(idx * 42) * 3.1415 - halfpi;
+    float stuffs[5];
 
-    int3 p = int3(x, y, z);
-    float stuff_c =  tex_in[int3(dc) + p];
-    float stuff_lc = tex_in[int3(dlc) + p];
-    float stuff_rc = tex_in[int3(drc) + p];
-    float stuff_cl = tex_in[int3(dcl) + p];
-    float stuff_cr = tex_in[int3(dcr) + p];
-    
-    float tla = t - turn_angle;
-    float3 td = float3(sin(tla) * cos(pc), cos(tla), sin(tla) * sin(pc));
-    float tra = t + turn_angle;
-    float3 rlc = rotate(td, axis, lca);
-    float3 rrc = rotate(td, axis, rca);
-    float3 rcl = rotate(td, axis, cla);
-    float3 rcr = rotate(td, axis, cra);
-    float rlc_length = length(rlc);
-    float rrc_length = length(rrc);
-    float rcl_length = length(rcl);
-    float rcr_length = length(rcr);
+    // Value straight ahead
+    float max_value = tex_in[int3(dc) + p];
+    int max_value_count = 1;
+    int max_values[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    for (int i = 1; i < 9; ++i) {
+        float angle = start_angle + halfpi / 2.0 * i;
+        float3 sense_position = rotate(dd, axis, angle) * sense_distance * d_c * r;
+        float stuff = tex_in[int3(sense_position) + p];
+        if (stuff > max_value) {
+            max_value_count = 1;
+            max_value = stuff;
+            max_values[0] = i;
+        } else if (stuff == max_value) {
+            max_values[max_value_count++] = i;
+        }
+    }
 
-    int max_value_count = 0;
-    int max_values[5];
-    #define C  0
-    #define LC 1
-    #define RC 2
-    #define CL 3
-    #define CR 4
-    float max_value = max(stuff_c, stuff_lc);
-    max_value = max(max_value, stuff_rc);
-    max_value = max(max_value, stuff_cl);
-    max_value = max(max_value, stuff_cr);
-
-    if (max_value == stuff_c) {
-        max_values[max_value_count++] = C;
-    }
-    if (max_value == stuff_lc) {
-        max_values[max_value_count++] = LC;
-    }
-    if (max_value == stuff_rc) {
-        max_values[max_value_count++] = RC;
-    }
-    if (max_value == stuff_cl) {
-        max_values[max_value_count++] = CL;
-    }
-    if (max_value == stuff_cr) {
-        max_values[max_value_count++] = CR;
-    }
-//
     uint r_direction = wang_hash(idx * uint(x) * uint(y) * uint(z)) % max_value_count;
     int direction = max_values[r_direction];
-    if (direction == LC) {
-        ph = atan2(rlc.z, rlc.x);
-        t = acos(rlc.y / rlc_length);
-    } else if (direction == RC) {
-        ph = atan2(rrc.z, rrc.x);
-        t = acos(rrc.y / rrc_length);
-    } else if (direction == CL) {
-        ph = atan2(rcl.z, rcl.x);
-        t = acos(rcl.y / rcl_length);
-    } else if (direction == CR) {
-        ph = atan2(rcr.z, rcr.x);
-        t = acos(rcr.y / rcr_length);
+    float tla = t - turn_angle;
+    float3 td = float3(sin(tla) * cos(pc), cos(tla), sin(tla) * sin(pc));
+    if (direction > 0) {
+        float3 best_direction = rotate(td, axis, direction * halfpi / 2.0 + start_angle);
+        ph = atan2(best_direction.z, best_direction.x);
+        t = acos(best_direction.y / length(best_direction));
     }
 
     float3 dir = float3(sin(t) * cos(ph), cos(t), sin(t) * sin(ph));
