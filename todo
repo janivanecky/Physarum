@@ -1,21 +1,25 @@
 ====================
 DOING
 ====================
+- update README with 3D
+    - gif like gif2 (~default params)
+    - gif like gif1 (params in screenshot)
+- cleanup particle_shader_3d.hlsl
 
 ====================
 TODO
 ====================
 - optimize further
     - 3D texture, there's huge drop in perf at around 600 size
-- update README with 3D
-- cleanup particle_shader_3d.hlsl
 - thread size multiple of warp size
 - flatten group count and group sizes
-- better sampling of environment in 3D?
 
 ====================
 DONE
 ====================
+14/4/2019
+- cleanup a bit particle_shader_3d.hlsl
+
 13/4/2019
 - 9-neighborhood
 - WIDTH/HEIGHT/DEPTH as constants to shaders
