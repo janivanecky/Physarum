@@ -1,5 +1,5 @@
-RWTexture3D<float> tex_in: register(u0);
-RWTexture3D<float> tex_out: register(u1);
+RWTexture3D<half> tex_in: register(u0);
+RWTexture3D<half> tex_out: register(u1);
 
 cbuffer ConfigBuffer : register(b0)
 {
@@ -11,7 +11,7 @@ cbuffer ConfigBuffer : register(b0)
     float decay_factor;
 };
 
-[numthreads(10,10,10)]
+[numthreads(8,8,8)]
 void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
           uint3 dispatchThreadId : SV_DispatchThreadID){
     uint3 p = dispatchThreadId.xyz;

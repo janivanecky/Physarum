@@ -1,4 +1,4 @@
-RWTexture3D<float> tex_in: register(u0);
+RWTexture3D<half> tex_in: register(u0);
 RWTexture3D<uint> tex_occ: register(u1);
 
 RWStructuredBuffer<float> particles_x: register(u2);

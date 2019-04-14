@@ -51,7 +51,9 @@ int main(int argc, char **argv)
     graphics::set_render_targets_viewport(&render_target_window, &depth_buffer);
 
     // Simulation params
-    uint32_t world_width = 400, world_height = 400, world_depth = 400;
+    uint32_t world_width = 480, world_height = 480, world_depth = 480;
+    //uint32_t size = 640 ;
+    //uint32_t world_width = size, world_height = size, world_depth = size;
     //uint32_t world_width = 250, world_height = 250, world_depth = 250;
     float spawn_radius = 50.0f;
     const int NUM_PARTICLES = 500000;
@@ -138,8 +140,8 @@ int main(int argc, char **argv)
     assert(graphics::is_ready(&decay_compute_shader));
 
     // Textures for the simulation
-    Texture3D trail_tex_A = graphics::get_texture3D(NULL, world_width, world_height, world_depth, DXGI_FORMAT_R32_FLOAT, 4);
-    Texture3D trail_tex_B = graphics::get_texture3D(NULL, world_width, world_height, world_depth, DXGI_FORMAT_R32_FLOAT, 4);
+    Texture3D trail_tex_A = graphics::get_texture3D(NULL, world_width, world_height, world_depth, DXGI_FORMAT_R16_FLOAT, 2);
+    Texture3D trail_tex_B = graphics::get_texture3D(NULL, world_width, world_height, world_depth, DXGI_FORMAT_R16_FLOAT, 2);
     Texture3D occ_tex = graphics::get_texture3D(NULL, world_width, world_height, world_depth, DXGI_FORMAT_R32_UINT, 4);
 
 	graphics::set_blend_state(BlendType::ALPHA);
@@ -418,9 +420,9 @@ int main(int argc, char **argv)
                 graphics::set_texture_compute(&trail_tex_A, 1);
             }
             #ifdef _2D
-            graphics::run_compute(world_width / 10, world_height / 10, 1);
+            graphics::run_compute(world_width / 8, world_height / 10, 1);
             #else
-            graphics::run_compute(world_width / 10, world_height / 10, world_depth / 10);
+            graphics::run_compute(world_width / 8, world_height / 8, world_depth / 8);
             #endif
             graphics::unset_texture_compute(0);
             graphics::unset_texture_compute(1);
