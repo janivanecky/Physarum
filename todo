@@ -1,14 +1,11 @@
 ====================
 DOING
 ====================
-- update README with 3D
-    - gif like gif2 (~default params)
-    - gif like gif1 (params in screenshot)
-- cleanup particle_shader_3d.hlsl
 
 ====================
 TODO
 ====================
+- cleanup particle_shader_3d.hlsl
 - optimize further
     - 3D texture, there's huge drop in perf at around 600 size
 - thread size multiple of warp size
@@ -18,6 +15,7 @@ TODO
 DONE
 ====================
 14/4/2019
+- update README with 3D
 - cleanup a bit particle_shader_3d.hlsl
 
 13/4/2019

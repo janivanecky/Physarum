@@ -2,7 +2,16 @@
 
 Inspired by [Sage](https://www.sagejenson.com/physarum) (based on [this paper](http://eprints.uwe.ac.uk/15260/1/artl.2010.16.2.pdf)).
 
-### Cool gifs (with parameters)
+### Cool gifs 3D
+
+![params1_3d.png](params1_3d.png)
+![gif1_3d.gif](gif1_3d.gif)
+
+
+![params2_3d.png](params2_3d.png)
+![gif2_3d.gif](gif2_3d.gif)
+
+### Cool gifs 2D
 Slime-mold-ish behavior
 
 ![params1.png](params1.png)
