@@ -10,10 +10,14 @@ TODO
     - 3D texture, there's huge drop in perf at around 600 size
 - thread size multiple of warp size
 - flatten group count and group sizes
+- imgs in repo to imgs folder
 
 ====================
 DONE
 ====================
+15/4/2019
+- more general 3D sampling
+
 14/4/2019
 - update README with 3D
 - cleanup a bit particle_shader_3d.hlsl

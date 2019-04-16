@@ -49,6 +49,7 @@ float mod(float x, float y) {
 void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     uint idx = index + 1000 * (group_id.x + group_id.y * 10 + group_id.z * 100);
     float halfpi = 3.1415 / 2.0f;
+    float pi = 3.1415;
 
     // Fetch current particle state
     float x = particles_x[idx];
@@ -72,10 +73,12 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     // Sample environment away from the center axis and store max values.
     float max_value = tex_in[int3(center_sense_pos) + p];
     int max_value_count = 1;
-    int max_values[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    #define SAMPLE_POINTS 8
+    int max_values[SAMPLE_POINTS + 1];// = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    max_values[0] = 0;
     float start_angle = random(idx * 42) * 3.1415 - halfpi;
-    for (int i = 1; i < 9; ++i) {
-        float angle = start_angle + halfpi / 2.0 * i;
+    for (int i = 1; i < SAMPLE_POINTS + 1; ++i) {
+        float angle = start_angle + pi * 2.0 / float(SAMPLE_POINTS) * i;
         float3 sense_position = rotate(off_center_base_dir, center_axis, angle) * sense_distance;
         float stuff = tex_in[int3(sense_position) + p];
         if (stuff > max_value) {
@@ -93,7 +96,7 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     float theta_turn = t - turn_angle;
     float3 off_center_base_dir_turn = float3(sin(theta_turn) * cos(ph), cos(theta_turn), sin(theta_turn) * sin(ph));
     if (direction > 0) {
-        float3 best_direction = rotate(off_center_base_dir_turn, center_axis, direction * halfpi / 2.0 + start_angle);
+        float3 best_direction = rotate(off_center_base_dir_turn, center_axis, direction * pi * 2.0 / float(SAMPLE_POINTS) + start_angle);
         ph = atan2(best_direction.z, best_direction.x);
         t = acos(best_direction.y / length(best_direction));
     }
