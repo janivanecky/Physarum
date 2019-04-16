@@ -17,6 +17,7 @@ DONE
 ====================
 15/4/2019
 - more general 3D sampling
+- modify move distance by max sampled value
 
 14/4/2019
 - update README with 3D

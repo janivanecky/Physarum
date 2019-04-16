@@ -266,21 +266,27 @@ int main(int argc, char **argv)
         int world_width;
         int world_height;
         int world_depth;
-        int filler;
+        float move_sense_coef;
+        float move_sense_offset;
+        int filler1;
+        int filler2;
+        int filler3;
     };
 
     Config config = {
-        0.22f,
-        20.0f,
-        0.41f,
-        1.0f,
+        0.48f,
+        23.0f,
+        0.63f,
+        2.77f,
         5.0f,
         0.32f,
         0.0f,
-        0.5f,
+        1.0f,
         int(world_width),
         int(world_height),
         int(world_depth),
+        0.0f,
+        1.0f,
     };
     ConstantBuffer config_buffer = graphics::get_constant_buffer(sizeof(Config));
 
@@ -468,14 +474,20 @@ int main(int argc, char **argv)
 
             Panel panel = ui::start_panel("", Vector2(10, 10.0f), 420.0f);
 
-            ui::add_slider(&panel, "SENSE SPREAD", &config.sense_spread, 0.0, math::PI);
-            ui::add_slider(&panel, "SENSE DISTANCE", &config.sense_distance, 0.0, 40.0);
-            ui::add_slider(&panel, "TURN ANGLE", &config.turn_angle, 0.0, math::PI);
+            float ss = math::rad2deg(config.sense_spread);
+            ui::add_slider(&panel, "SENSE SPREAD", &ss, 0.0, 90.0);
+            config.sense_spread = math::deg2rad(ss);
+            ui::add_slider(&panel, "SENSE DISTANCE", &config.sense_distance, 0.0, 100.0);
+            float ts = math::rad2deg(config.turn_angle);
+            ui::add_slider(&panel, "TURN ANGLE", &ts, 0.0, 90.0);
+            config.turn_angle = math::deg2rad(ts);
             ui::add_slider(&panel, "MOVE DISTANCE", &config.move_distance, 0.0, 20.0);
             ui::add_slider(&panel, "DEPOSIT VALUE", &config.deposit_value, 0.0, 5.0);
             ui::add_slider(&panel, "DECAY FACTOR", &config.decay_factor, 0.0, 1.0);
             ui::add_slider(&panel, "SPAWN RADIUS", &spawn_radius, 20.0f, world_height / 2.0f);
             ui::add_slider(&panel, "CENTER ATTRACTION", &config.center_attraction, 0.0, 5.0);
+            ui::add_slider(&panel, "MOVE SENSE COEF", &config.move_sense_coef, -1.0, 1.0);
+            ui::add_slider(&panel, "MOVE SENSE OFFSET", &config.move_sense_offset, 0.0, 1.0);
             bool collision = config.collision > 0.0f;
             ui::add_toggle(&panel, "COLLISION", &collision);
             config.collision = collision ? 1.0f : 0.0f;

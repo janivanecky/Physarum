@@ -30,6 +30,8 @@ cbuffer ConfigBuffer : register(b0)
     int world_width;
     int world_height;
     int world_depth;
+    float move_sense_coef;
+    float move_sense_offset;
 };
 
 float3 rotate(float3 v, float3 a, float angle) {
@@ -116,7 +118,7 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     }
 
     // Make a step
-    float3 dp = float3(sin(t) * cos(ph), cos(t), sin(t) * sin(ph)) * move_distance;
+    float3 dp = float3(sin(t) * cos(ph), cos(t), sin(t) * sin(ph)) * move_distance * (move_sense_offset + max_value * move_sense_coef);
     x += dp.x;
     y += dp.y;
     z += dp.z;
