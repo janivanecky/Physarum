@@ -10,10 +10,15 @@ TODO
     - 3D texture, there's huge drop in perf at around 600 size
 - thread size multiple of warp size
 - flatten group count and group sizes
+- move distance modified by max sampled value in 2D
 
 ====================
 DONE
 ====================
+16/4/2019
+- Don't rotate 3D cube
+- Don't move camera when using UI
+
 15/4/2019
 - more general 3D sampling
 - modify move distance by max sampled value

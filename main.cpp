@@ -323,36 +323,26 @@ int main(int argc, char **argv)
         // React to inputs
         {
             #ifndef _2D
-            radius -= input::mouse_scroll_delta() * 0.1f;
-            if (input::mouse_left_button_down()) {
-                Vector2 dm = input::mouse_delta_position();
-                azimuth += dm.x * 0.003f;
-                polar -= dm.y * 0.003f;
-                polar = math::clamp(polar, 0.02f, math::PI);
+            if(!ui::is_registering_input()) {
+                radius -= input::mouse_scroll_delta() * 0.1f;
+
+                if (input::mouse_left_button_down()) {
+                    Vector2 dm = input::mouse_delta_position();
+                    azimuth += dm.x * 0.003f;
+                    polar -= dm.y * 0.003f;
+                    polar = math::clamp(polar, 0.02f, math::PI);
+                }
             }
             if (turning_camera) {
                 azimuth += 0.01f;
             }
-            Vector3 eye_pos = Vector3(math::cos(azimuth) * math::sin(polar), math::cos(polar), math::sin(azimuth) * math::sin(polar)) * radius;
-            Matrix4x4 view_matrix = math::get_look_at(eye_pos, Vector3(0,0,0), Vector3(0,1,0));
-            matrices.view = view_matrix;
+            Vector3 eye_pos = Vector3(
+                math::cos(azimuth) * math::sin(polar),
+                math::cos(polar),
+                math::sin(azimuth) * math::sin(polar)
+            ) * radius;
+            matrices.view = math::get_look_at(eye_pos, Vector3(0,0,0), Vector3(0,1,0));;
 
-            float dir_x_mag = math::abs(eye_pos.x);
-            float dir_y_mag = math::abs(eye_pos.y);
-            float dir_z_mag = math::abs(eye_pos.z);
-            float eye_dir_max = math::max(dir_x_mag, math::max(dir_y_mag, dir_z_mag));
-            if (eye_dir_max == dir_x_mag) {
-                matrices.model = math::get_rotation(math::PIHALF, Vector3(0, 1, 0));
-                matrices.texcoord_map = 2;
-            } else if (eye_dir_max == dir_y_mag) {
-                matrices.model = math::get_rotation(-math::PIHALF, Vector3(1, 0, 0));
-                matrices.texcoord_map = 1;
-            } else {
-                matrices.model = math::get_identity();
-                matrices.texcoord_map = 0;
-            }
-
-            graphics::update_constant_buffer(&matrix_buffer, &matrices);
             if (input::key_pressed(KeyCode::F4)) matrices.show_grid = !matrices.show_grid;
             if (input::key_pressed(KeyCode::F5)) turning_camera = !turning_camera;
             #endif
