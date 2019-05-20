@@ -1,7 +1,7 @@
 #include "platform.h"
 #include "graphics.h"
 #include "file_system.h"
-#include "math2.h"
+#include "maths.h"
 #include "memory.h"
 #include "ui.h"
 #include "font.h"
