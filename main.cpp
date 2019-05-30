@@ -8,6 +8,10 @@
 #include "input.h"
 #include "random.h"
 #include <cassert>
+#include <mmsystem.h>
+#include "logging.h"
+#define MIDI_DEFINE
+#include "midi.h"
 
 float quad_vertices[] = {
     -1.0f, -1.0f, 0.0f, 1.0f,
@@ -30,6 +34,10 @@ uint32_t quad_vertices_count = 6;
 
 int main(int argc, char **argv)
 {
+    int midi_error = midi::init();
+    if (midi_error != MIDI_OK) {
+        return -1;
+    }
     // Set up window
     uint32_t window_width = 1200, window_height = 800;
  	Window window = platform::get_window("Physarum", window_width, window_height);
@@ -464,15 +472,26 @@ int main(int argc, char **argv)
 
             Panel panel = ui::start_panel("", Vector2(10, 10.0f), 420.0f);
 
+            config.sense_spread = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_0) * math::PIHALF;
             float ss = math::rad2deg(config.sense_spread);
             ui::add_slider(&panel, "SENSE SPREAD", &ss, 0.0, 90.0);
             config.sense_spread = math::deg2rad(ss);
+
+            config.sense_distance = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_1) * 100.0f;
             ui::add_slider(&panel, "SENSE DISTANCE", &config.sense_distance, 0.0, 100.0);
+            
+            config.turn_angle = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_2) * math::PIHALF;
             float ts = math::rad2deg(config.turn_angle);
             ui::add_slider(&panel, "TURN ANGLE", &ts, 0.0, 90.0);
             config.turn_angle = math::deg2rad(ts);
+
+            config.move_distance = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_3) * 20.0f;
             ui::add_slider(&panel, "MOVE DISTANCE", &config.move_distance, 0.0, 20.0);
+
+            config.deposit_value = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_4) * 5.0;
             ui::add_slider(&panel, "DEPOSIT VALUE", &config.deposit_value, 0.0, 5.0);
+
+            config.decay_factor = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_5) * 1.0;
             ui::add_slider(&panel, "DECAY FACTOR", &config.decay_factor, 0.0, 1.0);
             ui::add_slider(&panel, "SPAWN RADIUS", &spawn_radius, 20.0f, world_height / 2.0f);
             ui::add_slider(&panel, "CENTER ATTRACTION", &config.center_attraction, 0.0, 5.0);
@@ -515,6 +534,8 @@ int main(int argc, char **argv)
     //graphics::show_live_objects();
 
     graphics::release();
+
+    midi::release();
 
     return 0;
 }

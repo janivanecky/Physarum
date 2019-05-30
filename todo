@@ -11,6 +11,12 @@ TODO
 - thread size multiple of warp size
 - flatten group count and group sizes
 - move distance modified by max sampled value in 2D
+- option to turn colors on/off - probably ifdef
+    - might need ifdef support in shaders
+- better rendering of colors
+    - switchable between constant opacity and density view
+    - render slices back to forth always
+- render as voxels
 
 ====================
 DONE
