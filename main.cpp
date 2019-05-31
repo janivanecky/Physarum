@@ -355,8 +355,7 @@ int main(int argc, char **argv)
             if (input::key_pressed(KeyCode::ESC)) is_running = false; 
             if (input::key_pressed(KeyCode::F1)) show_ui = !show_ui; 
             if (input::key_pressed(KeyCode::F3)) run_mold = !run_mold;
-            if (input::key_pressed(KeyCode::F2))
-            {
+            if (input::key_pressed(KeyCode::F2)) {
                 // Reset particles + trails + occupancy map
                 #ifdef _2D
                 update_particles(particles_x, particles_y, particles_theta, NUM_PARTICLES, spawn_radius);
@@ -386,7 +385,6 @@ int main(int argc, char **argv)
             is_a = !is_a;
             graphics::set_compute_shader(&compute_shader);
             uint32_t clear_tex_uint[4] = {0, 0, 0, 0};
-            float clear_tex[4] = {0, 0, 0, 0};
             graphics_context->context->ClearUnorderedAccessViewUint(occ_tex.ua_view, clear_tex_uint);
             graphics::set_texture_compute(&occ_tex, 1);
             if (is_a) {
