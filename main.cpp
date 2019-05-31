@@ -35,9 +35,7 @@ uint32_t quad_vertices_count = 6;
 int main(int argc, char **argv)
 {
     int midi_error = midi::init();
-    if (midi_error != MIDI_OK) {
-        return -1;
-    }
+
     // Set up window
     uint32_t window_width = 1200, window_height = 800;
  	Window window = platform::get_window("Physarum", window_width, window_height);
