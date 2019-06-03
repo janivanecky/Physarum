@@ -63,64 +63,7 @@ int main(int argc, char **argv)
     //uint32_t world_width = 250, world_height = 250, world_depth = 250;
     float spawn_radius = 50.0f;
     const int NUM_PARTICLES = 500000;
-    //#define _2D
-#ifdef _2D
-    // Vertex shader
-    File vertex_shader_file = file_system::read_file("vertex_shader.hlsl"); 
-    VertexShader vertex_shader = graphics::get_vertex_shader_from_code((char *)vertex_shader_file.data, vertex_shader_file.size);
-    file_system::release_file(vertex_shader_file);
-    assert(graphics::is_ready(&vertex_shader));
 
-    // Pixel shader
-    File pixel_shader_file = file_system::read_file("pixel_shader.hlsl"); 
-    PixelShader pixel_shader = graphics::get_pixel_shader_from_code((char *)pixel_shader_file.data, pixel_shader_file.size);
-    file_system::release_file(pixel_shader_file);
-    assert(graphics::is_ready(&pixel_shader));
-
-    // Particle system shader
-    File compute_shader_file = file_system::read_file("particle_shader.hlsl");
-    ComputeShader compute_shader = graphics::get_compute_shader_from_code((char *)compute_shader_file.data, compute_shader_file.size);
-    file_system::release_file(compute_shader_file);
-    assert(graphics::is_ready(&compute_shader));
-
-    // Decay/diffusion shader
-    File decay_compute_shader_file = file_system::read_file("decay_shader.hlsl");
-    ComputeShader decay_compute_shader = graphics::get_compute_shader_from_code((char *)decay_compute_shader_file.data, decay_compute_shader_file.size);
-    file_system::release_file(decay_compute_shader_file);
-    assert(graphics::is_ready(&decay_compute_shader));
-
-    // Textures for the simulation
-    Texture2D trail_tex_A = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_FLOAT, 4);
-    Texture2D trail_tex_B = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_FLOAT, 4);
-    Texture2D occ_tex = graphics::get_texture2D(NULL, world_width, world_height, DXGI_FORMAT_R32_UINT, 4);
-
-    // Particles setup
-    float *particles_x = memory::alloc_heap<float>(NUM_PARTICLES);
-    float *particles_y = memory::alloc_heap<float>(NUM_PARTICLES);
-    float *particles_theta = memory::alloc_heap<float>(NUM_PARTICLES);
-
-    auto update_particles = [&world_width, &world_height](float *px, float *py, float *pt, int count, float spawn_radius) {
-        for (int i = 0; i < count; ++i) {
-            float angle = random::uniform(0, math::PI2);
-            float radius = random::uniform(0, 1);
-            radius = math::sqrt(radius) * spawn_radius;
-            px[i] = math::sin(angle) * radius + world_width / 2.0f;
-            py[i] = math::cos(angle) * radius + world_height / 2.0f;
-            pt[i] = random::uniform(0, math::PI2);
-        }
-    };
-    update_particles(particles_x, particles_y, particles_theta, NUM_PARTICLES, spawn_radius);
-
-    // Set up buffer containing particle data
-    StructuredBuffer particles_buffer_x = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
-    graphics::update_structured_buffer(&particles_buffer_x, particles_x);
-    StructuredBuffer particles_buffer_y = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
-    graphics::update_structured_buffer(&particles_buffer_y, particles_y);
-    StructuredBuffer particles_buffer_theta = graphics::get_structured_buffer(sizeof(float), NUM_PARTICLES);
-    graphics::update_structured_buffer(&particles_buffer_theta, particles_theta);
-
-    Mesh quad_mesh = graphics::get_mesh(quad_vertices, quad_vertices_count, quad_vertices_stride, NULL, 0, 0);
-#else
     // Vertex shader
     File vertex_shader_file = file_system::read_file("vertex_shader_3d.hlsl"); 
     VertexShader vertex_shader = graphics::get_vertex_shader_from_code((char *)vertex_shader_file.data, vertex_shader_file.size);
@@ -256,7 +199,6 @@ int main(int argc, char **argv)
     graphics::update_constant_buffer(&matrix_buffer, &matrices);
     graphics::set_constant_buffer(&matrix_buffer, 4);
 
-#endif
     TextureSampler tex_sampler = graphics::get_texture_sampler();
     bool is_a = true;
 
@@ -328,7 +270,6 @@ int main(int argc, char **argv)
 
         // React to inputs
         {
-            #ifndef _2D
             if(!ui::is_registering_input()) {
                 radius -= input::mouse_scroll_delta() * 0.1f;
 
@@ -351,19 +292,14 @@ int main(int argc, char **argv)
 
             if (input::key_pressed(KeyCode::F4)) matrices.show_grid = !matrices.show_grid;
             if (input::key_pressed(KeyCode::F5)) turning_camera = !turning_camera;
-            #endif
             if (input::key_pressed(KeyCode::ESC)) is_running = false; 
             if (input::key_pressed(KeyCode::F1)) show_ui = !show_ui; 
             if (input::key_pressed(KeyCode::F3)) run_mold = !run_mold;
             if (input::key_pressed(KeyCode::F2)) {
                 // Reset particles + trails + occupancy map
-                #ifdef _2D
-                update_particles(particles_x, particles_y, particles_theta, NUM_PARTICLES, spawn_radius);
-                #else
                 update_particles(particles_x, particles_y, particles_z, particles_phi, particles_theta, NUM_PARTICLES, spawn_radius);
                 graphics::update_structured_buffer(&particles_buffer_z, particles_z);
                 graphics::update_structured_buffer(&particles_buffer_phi, particles_phi);
-                #endif
                 graphics::update_structured_buffer(&particles_buffer_x, particles_x);
                 graphics::update_structured_buffer(&particles_buffer_y, particles_y);
                 graphics::update_structured_buffer(&particles_buffer_theta, particles_theta);
@@ -392,17 +328,11 @@ int main(int argc, char **argv)
             } else {
                 graphics::set_texture_compute(&trail_tex_B, 0);
             }
-            #ifdef _2D
-            graphics::set_structured_buffer(&particles_buffer_x, 2);
-            graphics::set_structured_buffer(&particles_buffer_y, 3);
-            graphics::set_structured_buffer(&particles_buffer_theta, 4);
-            #else
             graphics::set_structured_buffer(&particles_buffer_x, 2);
             graphics::set_structured_buffer(&particles_buffer_y, 3);
             graphics::set_structured_buffer(&particles_buffer_z, 4);
             graphics::set_structured_buffer(&particles_buffer_phi, 5);
             graphics::set_structured_buffer(&particles_buffer_theta, 6);
-            #endif
             graphics::run_compute(10, 10, 5);
             graphics::unset_texture_compute(0);
             graphics::unset_texture_compute(1);
@@ -419,11 +349,7 @@ int main(int argc, char **argv)
                 graphics::set_texture_compute(&trail_tex_B, 0);
                 graphics::set_texture_compute(&trail_tex_A, 1);
             }
-            #ifdef _2D
-            graphics::run_compute(world_width / 8, world_height / 10, 1);
-            #else
             graphics::run_compute(world_width / 8, world_height / 8, world_depth / 8);
-            #endif
             graphics::unset_texture_compute(0);
             graphics::unset_texture_compute(1);
         }
@@ -441,9 +367,6 @@ int main(int argc, char **argv)
                 graphics::set_texture(&trail_tex_A, 0);
             }
             graphics::set_texture_sampler(&tex_sampler, 0);
-            #ifdef _2D
-            graphics::draw_mesh(&quad_mesh);
-            #else
             matrices.model = math::get_rotation(math::PIHALF, Vector3(0, 1, 0));
             matrices.texcoord_map = 2;
             graphics::update_constant_buffer(&matrix_buffer, &matrices);
@@ -458,7 +381,6 @@ int main(int argc, char **argv)
             matrices.texcoord_map = 0;
             graphics::update_constant_buffer(&matrix_buffer, &matrices);
             graphics::draw_mesh(&quad_mesh);
-            #endif
             graphics::unset_texture(0);
         }
 
@@ -521,11 +443,9 @@ int main(int argc, char **argv)
     graphics::release(&particles_buffer_x);
     graphics::release(&particles_buffer_y);
     graphics::release(&particles_buffer_theta);
-    #ifndef _2D
     graphics::release(&particles_buffer_z);
     graphics::release(&particles_buffer_phi);
     graphics::release(&matrix_buffer);
-    #endif
 
     //graphics::show_live_objects();
 
