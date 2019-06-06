@@ -1,6 +1,10 @@
 ====================
 DOING
 ====================
+- README update
+- sampling of pairs line should depend on line length
+- blit shader can be optimized, now is utilizing single thread per warp
+- midi interaction when not using midi
 
 ====================
 TODO
