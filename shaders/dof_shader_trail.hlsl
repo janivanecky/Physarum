@@ -57,11 +57,11 @@ void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
     float3 world_size = float3(world_width, world_height, world_depth);
     
     for (int i = 0; i < iterations; ++i) {
-        // We're going to be sampling points in 2x2x2 area.
-        float3 in_pos = groupID.xyz * 2.0;
-        in_pos.x += random(idx * 11 + i * 33) * 2.0;
-        in_pos.y += random(idx * 13 + i * 33) * 2.0;
-        in_pos.z += random(idx * 17 + i * 33) * 2.0;
+        // We're going to be sampling points in 8x8x8 area.
+        float3 in_pos = groupID.xyz * 8.0;
+        in_pos.x += random(idx * 11 + i * 33) * 8.0;
+        in_pos.y += random(idx * 13 + i * 33) * 8.0;
+        in_pos.z += random(idx * 17 + i * 33) * 8.0;
 
         // Project point in "mold world texture space" to 3D scene world space.
         float4 in_posf = float4(in_pos / world_size * 2.0 - 1.0, 1.0);

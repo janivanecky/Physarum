@@ -34,10 +34,19 @@ uint32_t quad_vertices_count = 6;
 
 int main(int argc, char **argv)
 {
+    File galaxy_data = file_system::read_file("C:\\src\\data.bin");
+    float *data = (float*)galaxy_data.data;
+    int data_count = 19268;
+
+    File dust_data = file_system::read_file("C:\\src\\data_xyz.bin");
+    float *dust = (float*)dust_data.data;
+    int dust_count = 6381559;
+
     int midi_error = midi::init();
 
     // Set up window
     uint32_t window_width = 1400, window_height = 800;
+    //window_width = 2560, window_height = 1440;
  	Window window = platform::get_window("Physarum", window_width, window_height);
     assert(platform::is_window_valid(&window));
 
@@ -59,7 +68,8 @@ int main(int argc, char **argv)
     // Simulation params
     uint32_t world_width = 480, world_height = 480, world_depth = 480;
     float spawn_radius = 50.0f;
-    const int NUM_PARTICLES = 100000;
+    const int NUM_PARTICLES = 1000000;
+//    const int NUM_PARTICLES = 7000000;
 
     // DoF rendering shader for rendering trail.
     File draw_compute_shader_file_trail = file_system::read_file("dof_shader_trail.hlsl");
@@ -131,10 +141,6 @@ int main(int argc, char **argv)
 	graphics::set_blend_state(BlendType::ALPHA);
 
     // Particles setup
-    struct Particle3D {
-        float x; float y; float z; float phi; float theta; float pad1; float pad2; float pad3;
-    };
-    Particle3D *particles = memory::alloc_heap<Particle3D>(NUM_PARTICLES);
     float *particles_x = memory::alloc_heap<float>(NUM_PARTICLES);
     float *particles_y = memory::alloc_heap<float>(NUM_PARTICLES);
     float *particles_z = memory::alloc_heap<float>(NUM_PARTICLES);
@@ -142,17 +148,55 @@ int main(int argc, char **argv)
     float *particles_theta = memory::alloc_heap<float>(NUM_PARTICLES);
     unsigned int *particles_pair = memory::alloc_heap<unsigned int>(NUM_PARTICLES);
 
-    auto update_particles = [&world_width, &world_height, &world_depth](float *px, float *py, float *pz, float *pp, float *pt, unsigned int *pb, int count, float spawn_radius) {
+    auto update_particles = [&world_width, &world_height, &world_depth, &data, &data_count, &dust, &dust_count](float *px, float *py, float *pz, float *pp, float *pt, unsigned int *pb, int count, float spawn_radius) {
         for (int i = 0; i < count; ++i) {
             float phi = random::uniform(0, math::PI2);
             float theta = math::acos(2 * random::uniform(0, 1.0) - 1);
             float radius = random::uniform(0, 1);
             radius = math::pow(radius, 1.0f/3.0f) * spawn_radius;
-            px[i] = math::sin(phi) * math::sin(theta) * radius + world_width / 2.0f;
-            py[i] = math::cos(theta) * radius + world_height / 2.0f;
-            pz[i] = math::cos(phi) * math::sin(theta) * radius + world_depth / 2.0f;
-            pp[i] = math::acos(2 * random::uniform(0, 1.0) - 1);
             pt[i] = random::uniform(0, math::PI2);
+            //px[i] = math::sin(phi) * math::sin(theta) * radius + world_width / 2.0f;
+            //py[i] = math::cos(theta) * radius + world_height / 2.0f;
+            //pz[i] = math::cos(phi) * math::sin(theta) * radius + world_depth / 2.0f;
+            px[i] = random::uniform(0, world_width);
+            py[i] = random::uniform(0, world_height);
+            pz[i] = random::uniform(0, world_depth);
+            //if (i < dust_count / 10) {
+            //    pt[i] = -5;
+            //    float x = dust[i * 3 * 10];
+            //    float y = dust[i * 3 * 10 + 1];
+            //    float z = dust[i * 3 * 10 + 2];
+            //    x /= 8.47f;
+            //    y /= 8.47f;
+            //    z /= 8.47f;
+            //    px[i] = x * world_width;
+            //    py[i] = y * world_height;
+            //    pz[i] = z * world_depth;
+            //}
+
+            if (i < data_count) {
+                float xmin = -0.026771955;
+                float xmax = 0.025562383;
+                float zmin = -0.027714936;
+                float zmax = -0.0018909021;
+                float ymin = -0.025185598;
+                float ymax = 0.002324806;
+                phi = data[i * 3];//random::uniform(0, math::PI2);
+                theta = data[i * 3 + 1];//math::acos(2 * random::uniform(0, 1.0) - 1);
+                radius = data[i * 3 + 2];//random::uniform(0, 1);
+                pt[i] = -5;
+                float x = math::sin(phi) * math::sin(theta) * radius;
+                float y = math::cos(theta) * radius;
+                float z = math::cos(phi) * math::sin(theta) * radius;
+                x = (x - xmin) / (xmax - xmin);
+                y = (y - ymin) / (xmax - xmin);
+                z = (z - zmin) / (xmax - xmin);
+                px[i] = x * world_width;
+                py[i] = y * world_height + world_height / 4.0f;
+                pz[i] = z * world_depth + world_depth / 4.0f;
+            }
+            pp[i] = math::acos(2 * random::uniform(0, 1.0) - 1);
+            //pt[i] = random::uniform(0, math::PI2);
             pb[i] = 100000000; // particle ID 100 million means no pair.
         }
     };
@@ -302,7 +346,7 @@ int main(int argc, char **argv)
         5.0f,
         0.32f,
         0.0f,
-        1.0f,
+        0.0f,
         int(world_width),
         int(world_height),
         int(world_depth),
@@ -414,7 +458,7 @@ int main(int argc, char **argv)
             graphics::set_structured_buffer(&particles_buffer_z, 4);
             graphics::set_structured_buffer(&particles_buffer_phi, 5);
             graphics::set_structured_buffer(&particles_buffer_theta, 6);
-            graphics::run_compute(10, 10, 1);
+            graphics::run_compute(10, 10, 10);
             graphics::unset_texture_compute(0);
             graphics::unset_texture_compute(1);
         }
@@ -454,15 +498,16 @@ int main(int argc, char **argv)
                     } else {
                         graphics::set_texture_compute(&trail_tex_A, 0);
                     }
-                    graphics::run_compute(world_width / 2, world_height / 2, world_depth / 2);
+                    graphics::run_compute(world_width / 8, world_height / 8, world_depth / 8);
                 } else {
                     if (dof_type == DofType::PARTICLES) {
+                        graphics::set_structured_buffer(&particles_buffer_theta, 6);
                         graphics::set_compute_shader(&draw_compute_shader_particle);
                     } else {
-                        graphics::set_compute_shader(&draw_compute_shader_particle_pair);
                         graphics::set_structured_buffer(&particles_buffer_pair, 6);
+                        graphics::set_compute_shader(&draw_compute_shader_particle_pair);
                     }
-                    graphics::run_compute(10, 10, 1);
+                    graphics::run_compute(10, 10, 10);
                 }
 
                 graphics::set_compute_shader(&blit_compute_shader);
@@ -475,11 +520,6 @@ int main(int argc, char **argv)
 
                 graphics::set_vertex_shader(&vertex_shader_2d);
                 graphics::set_pixel_shader(&pixel_shader_2d);
-                if (is_a) {
-                    graphics::set_texture(&trail_tex_B, 0);
-                } else {
-                    graphics::set_texture(&trail_tex_A, 0);
-                }
                 graphics::set_texture(&display_tex, 0);
                 graphics::set_texture_sampler(&tex_sampler, 0);
                 graphics::draw_mesh(&quad_mesh);
@@ -580,7 +620,7 @@ int main(int argc, char **argv)
                 ui::add_slider(&panel, "FOCAL DEPTH", &rendering_settings.focal_depth, 0.0, 5.0);
                 ui::add_slider(&panel, "SAMPLE WEIGHT", &rendering_settings.sample_weight, 0.0, .06);
                 float i = rendering_settings.iterations;
-                ui::add_slider(&panel, "ITERATION", &i, 0.0, 2500);
+                ui::add_slider(&panel, "ITERATION", &i, 0.0, 20);
                 rendering_settings.iterations = int(i);
                 ui::add_slider(&panel, "PAIR BREAK DISTANCE", &rendering_settings.break_distance, 0.0, 512);
                 ui::end_panel(&panel);

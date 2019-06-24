@@ -9,6 +9,10 @@ SamplerState tex_sampler : register(s0);
 
 float4 main(PixelInput input) : SV_TARGET
 {
-	float v = tex.Sample(tex_sampler, input.texcoord_out) / 5.0;
+	float v = tex.Sample(tex_sampler, input.texcoord_out);
+	if (v > 990.0f) {
+		return float4(1, 0, 0, 1);
+	}
+	v /= 5.0;
 	return float4(v, v, v, 1);
 }

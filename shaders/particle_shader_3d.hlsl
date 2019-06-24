@@ -59,6 +59,7 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     float z = particles_z[idx];
     float t = particles_theta[idx];
     float ph = particles_phi[idx];
+    bool seed = t < -1.0;
 
     // Get vector which points in the current particle's direction 
     float3 center_axis = float3(sin(t) * cos(ph), cos(t), sin(t) * sin(ph));
@@ -118,34 +119,36 @@ void main(uint index : SV_GroupIndex, uint3 group_id :SV_GroupID){
     }
 
     // Make a step
-    float3 dp = float3(sin(t) * cos(ph), cos(t), sin(t) * sin(ph)) * move_distance * (move_sense_offset + max_value * move_sense_coef);
-    x += dp.x;
-    y += dp.y;
-    z += dp.z;
+    if (!seed) {
+        float3 dp = float3(sin(t) * cos(ph), cos(t), sin(t) * sin(ph)) * move_distance * (move_sense_offset + max_value * move_sense_coef);
+        x += dp.x;
+        y += dp.y;
+        z += dp.z;
+        // Keep the particle inside environment
+        x = mod(x, world_width);
+        y = mod(y, world_height);
+        z = mod(z, world_depth);
 
-    // Keep the particle inside environment
-    x = mod(x, world_width);
-    y = mod(y, world_height);
-    z = mod(z, world_depth);
+        // Check for collisions
+        uint val = 0;
+        InterlockedCompareExchange(tex_occ[uint3(x, y, z)], 0, uint(collision), val);
+        if (val == 1.0) {
+            x = particles_x[idx];
+            y = particles_y[idx];
+            z = particles_z[idx];
+            t = acos(2 * float(wang_hash(idx * uint(x) * uint(y) * uint(z) + 4) % 1000) / 1000.0 - 1);
+            ph = float(wang_hash(idx * uint(x) * uint(y) * uint(z) + 12) % 1000) / 1000.0 * 3.1415 * 2.0;
+        }
 
-    // Check for collisions
-    uint val = 0;
-    InterlockedCompareExchange(tex_occ[uint3(x, y, z)], 0, uint(collision), val);
-    if (val == 1.0) {
-        x = particles_x[idx];
-        y = particles_y[idx];
-        z = particles_z[idx];
-        t = acos(2 * float(wang_hash(idx * uint(x) * uint(y) * uint(z) + 4) % 1000) / 1000.0 - 1);
-        ph = float(wang_hash(idx * uint(x) * uint(y) * uint(z) + 12) % 1000) / 1000.0 * 3.1415 * 2.0;
+        // Update particle state
+        particles_x[idx] = x;
+        particles_y[idx] = y;
+        particles_z[idx] = z;
+        particles_theta[idx] = t;
+        particles_phi[idx] = ph;
+        tex_in[uint3(x, y, z)] += deposit_value;
+    } else {
+        tex_in[uint3(x, y, z)] += 5.0;
     }
-
-    // Update particle state
-    particles_x[idx] = x;
-    particles_y[idx] = y;
-    particles_z[idx] = z;
-    particles_theta[idx] = t;
-    particles_phi[idx] = ph;
-
-    tex_in[uint3(x, y, z)] += deposit_value;
 }
 

@@ -26,5 +26,11 @@ cbuffer ConfigBuffer : register(b4)
 [numthreads(1, 1, 1)]
 void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 groupID : SV_GroupID,
           uint3 dispatchThreadId : SV_DispatchThreadID){
-    tex_out[dispatchThreadId.xy] = tex_in[dispatchThreadId.xy] / 1000.0 * sample_weight;
+    //tex_out[dispatchThreadId.xy] = tex_in[dispatchThreadId.xy] / 1000.0 * sample_weight;
+    float val = tex_in[dispatchThreadId.xy];
+    if (val < 1000000000) {
+        tex_out[dispatchThreadId.xy] = val / 1000.0 * sample_weight;
+    } else {
+        tex_out[dispatchThreadId.xy] = 1000.0f;
+    }
 }

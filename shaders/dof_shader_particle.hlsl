@@ -1,6 +1,7 @@
 RWStructuredBuffer<float> particles_x: register(u2);
 RWStructuredBuffer<float> particles_y: register(u3);
 RWStructuredBuffer<float> particles_z: register(u4);
+RWStructuredBuffer<float> particles_t: register(u6);
 RWTexture2D<uint> tex_out: register(u1);
 
 cbuffer ConfigBuffer : register(b4)
@@ -60,6 +61,7 @@ void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 group_id : SV_GroupID,
     float x = particles_x[idx];
     float y = particles_y[idx];
     float z = particles_z[idx];
+    float t = particles_t[idx];
     float3 in_pos = float3(x, y, z);
 
     // Project point in "mold world texture space" to 3D scene world space.
@@ -85,6 +87,10 @@ void main(uint3 threadIDInGroup : SV_GroupThreadID, uint3 group_id : SV_GroupID,
         
         // Store sample to output texture.
         uint2 out_pos = uint2(out_posf.xy);
-        InterlockedAdd(tex_out[out_pos], 1000);
+        if (t < 0.0) {
+            InterlockedAdd(tex_out[out_pos], 1000000000);
+        } else {
+            InterlockedAdd(tex_out[out_pos], 1000);
+        }
     }
 }
