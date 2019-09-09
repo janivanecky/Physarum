@@ -1,4 +1,5 @@
 # Physarum
+![title.png](imgs/title.png)
 
 Inspired by [Sage](https://www.sagejenson.com/physarum) (based on [this paper](http://eprints.uwe.ac.uk/15260/1/artl.2010.16.2.pdf)).
 
