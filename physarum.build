@@ -4,4 +4,5 @@ build_exe(physarum.exe, main.cpp ../cpplib/ui.cpp ../cpplib/maths.cpp ../cpplib/
 libs(kernel32.lib user32.lib gdi32.lib D3D11.lib dxguid.lib d3dcompiler.lib DXGI.lib XAudio2.lib Ole32.lib ../cpplib/freetype/win64/freetype271MT.lib Winmm.lib)
 copy(../cpplib/shaders/*, $BIN)
 copy(../cpplib/fonts/*, $BIN)
+copy(../cpplib/freetype/win64/freetype271MT.dll, $BIN)
 copy(shaders/*, $BIN)
