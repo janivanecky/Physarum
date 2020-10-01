@@ -9,7 +9,6 @@
 #include "random.h"
 #include <cassert>
 #include <mmsystem.h>
-#include "logging.h"
 #define MIDI_DEFINE
 #include "midi.h"
 
@@ -90,13 +89,13 @@ int main(int argc, char **argv)
     assert(graphics::is_ready(&blit_compute_shader));
 
     // Vertex shader
-    File vertex_shader_file = file_system::read_file("vertex_shader_3d.hlsl"); 
+    File vertex_shader_file = file_system::read_file("vertex_shader_3d.hlsl");
     VertexShader vertex_shader = graphics::get_vertex_shader_from_code((char *)vertex_shader_file.data, vertex_shader_file.size);
     file_system::release_file(vertex_shader_file);
     assert(graphics::is_ready(&vertex_shader));
 
     // Pixel shader
-    File pixel_shader_file = file_system::read_file("pixel_shader_3d.hlsl"); 
+    File pixel_shader_file = file_system::read_file("pixel_shader_3d.hlsl");
     PixelShader pixel_shader = graphics::get_pixel_shader_from_code((char *)pixel_shader_file.data, pixel_shader_file.size);
     file_system::release_file(pixel_shader_file);
     assert(graphics::is_ready(&pixel_shader));
@@ -114,13 +113,13 @@ int main(int argc, char **argv)
     assert(graphics::is_ready(&decay_compute_shader));
 
     // Vertex shader for displaying textures.
-    vertex_shader_file = file_system::read_file("vertex_shader.hlsl"); 
+    vertex_shader_file = file_system::read_file("vertex_shader.hlsl");
     VertexShader vertex_shader_2d = graphics::get_vertex_shader_from_code((char *)vertex_shader_file.data, vertex_shader_file.size);
     file_system::release_file(vertex_shader_file);
     assert(graphics::is_ready(&vertex_shader_2d));
 
     // Pixel shader for displaying textures.
-    pixel_shader_file = file_system::read_file("pixel_shader.hlsl"); 
+    pixel_shader_file = file_system::read_file("pixel_shader.hlsl");
     PixelShader pixel_shader_2d = graphics::get_pixel_shader_from_code((char *)pixel_shader_file.data, pixel_shader_file.size);
     file_system::release_file(pixel_shader_file);
     assert(graphics::is_ready(&pixel_shader_2d));
@@ -131,7 +130,7 @@ int main(int argc, char **argv)
     Texture3D occ_tex = graphics::get_texture3D(NULL, world_width, world_height, world_depth, DXGI_FORMAT_R32_UINT, 4);
     Texture2D display_tex = graphics::get_texture2D(NULL, window_width, window_height, DXGI_FORMAT_R32_FLOAT, 4);
     Texture2D display_tex_uint = graphics::get_texture2D(NULL, window_width, window_height, DXGI_FORMAT_R32_UINT, 4);
-    
+
 	graphics::set_blend_state(BlendType::ALPHA);
 
     // Particles setup
@@ -191,7 +190,7 @@ int main(int argc, char **argv)
         1.0f, 1.0f, 0.0f,
         1.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f,
-    };  
+    };
 
     float *super_quad_vertices = memory::alloc_heap<float>(sizeof(super_quad_vertices_template) / sizeof(float) * world_depth);
     float z_step = 2.0f / (float)world_depth;
@@ -334,7 +333,7 @@ int main(int argc, char **argv)
     {
         printf("%f\n", timer::checkpoint(&timer));
         input::reset();
-    
+
         // Event loop
         Event event;
         while(platform::get_event(&event))
@@ -376,8 +375,8 @@ int main(int argc, char **argv)
 
             if (input::key_pressed(KeyCode::F4)) rendering_settings.show_grid = !rendering_settings.show_grid;
             if (input::key_pressed(KeyCode::F5)) turning_camera = !turning_camera;
-            if (input::key_pressed(KeyCode::ESC)) is_running = false; 
-            if (input::key_pressed(KeyCode::F1)) show_ui = !show_ui; 
+            if (input::key_pressed(KeyCode::ESC)) is_running = false;
+            if (input::key_pressed(KeyCode::F1)) show_ui = !show_ui;
             if (input::key_pressed(KeyCode::F3)) run_mold = !run_mold;
             if (input::key_pressed(KeyCode::F9)) render_dof = !render_dof;
             if (input::key_pressed(KeyCode::F2)) {
@@ -400,7 +399,7 @@ int main(int argc, char **argv)
         graphics::update_constant_buffer(&config_buffer, &config);
         graphics::set_constant_buffer(&config_buffer, 0);
 
-        // Particle simulation 
+        // Particle simulation
         if (run_mold)
         {
             is_a = !is_a;
@@ -443,7 +442,7 @@ int main(int argc, char **argv)
         {
             graphics::set_render_targets_viewport(&render_target_window);
             graphics::clear_render_target(&render_target_window, 0.0f, 0.0f, 0.0f, 1);
-            
+
             if(render_dof) {
                 uint32_t clear_tex_uint[4] = {0, 0, 0, 0};
                 graphics_context->context->ClearUnorderedAccessViewUint(display_tex_uint.ua_view, clear_tex_uint);
@@ -498,12 +497,12 @@ int main(int argc, char **argv)
                     graphics::set_texture(&trail_tex_A, 0);
                 }
                 graphics::set_texture_sampler(&tex_sampler, 0);
-                
+
                 rendering_settings.model = math::get_rotation(math::PIHALF, Vector3(0, 1, 0));
                 rendering_settings.texcoord_map = 2;
                 graphics::update_constant_buffer(&rendering_settings_buffer, &rendering_settings);
                 graphics::draw_mesh(&super_quad_mesh);
-                
+
                 rendering_settings.model = math::get_rotation(-math::PIHALF, Vector3(1, 0, 0));
                 rendering_settings.texcoord_map = 1;
                 graphics::update_constant_buffer(&rendering_settings_buffer, &rendering_settings);
@@ -534,7 +533,7 @@ int main(int argc, char **argv)
                 config.sense_distance = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_1) * 100.0f;
             }
             ui::add_slider(&panel, "SENSE DISTANCE", &config.sense_distance, 0.0, 100.0);
-            
+
             if (use_midi) {
                 config.turn_angle = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_2) * math::PIHALF;
             }
@@ -579,17 +578,17 @@ int main(int argc, char **argv)
                 if (changed && dof_trail) {
                     dof_type = DofType::TRAIL;
                 }
-                
+
                 changed = ui::add_toggle(&panel, "PARTICLES", &dof_particles);
                 if (changed && dof_particles) {
                     dof_type = DofType::PARTICLES;
                 }
-                
+
                 changed = ui::add_toggle(&panel, "PARTICLE_PAIRS", &dof_particle_pairs);
                 if (changed && dof_particle_pairs) {
                     dof_type = DofType::PARTICLE_PAIRS;
                 }
-                
+
                 ui::add_slider(&panel, "DOF SIZE", &rendering_settings.dof_size, 0.0, 2.0);
                 ui::add_slider(&panel, "DOF DISTRIBUTION", &rendering_settings.dof_distribution, 0.0, 4.0);
                 ui::add_slider(&panel, "FOCAL DISTANCE", &rendering_settings.focal_distance, 0.0, 10.0);
