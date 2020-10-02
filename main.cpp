@@ -6,7 +6,6 @@
 #include "ui.h"
 #include "font.h"
 #include "input.h"
-#include "random.h"
 #include <cassert>
 #include <mmsystem.h>
 #define MIDI_DEFINE
@@ -147,15 +146,15 @@ int main(int argc, char **argv)
 
     auto update_particles = [&world_width, &world_height, &world_depth](float *px, float *py, float *pz, float *pp, float *pt, unsigned int *pb, int count, float spawn_radius) {
         for (int i = 0; i < count; ++i) {
-            float phi = random::uniform(0, math::PI2);
-            float theta = math::acos(2 * random::uniform(0, 1.0) - 1);
-            float radius = random::uniform(0, 1);
+            float phi = math::random_uniform(0, math::PI2);
+            float theta = math::acos(2 * math::random_uniform(0, 1.0) - 1);
+            float radius = math::random_uniform(0, 1);
             radius = math::pow(radius, 1.0f/3.0f) * spawn_radius;
             px[i] = math::sin(phi) * math::sin(theta) * radius + world_width / 2.0f;
             py[i] = math::cos(theta) * radius + world_height / 2.0f;
             pz[i] = math::cos(phi) * math::sin(theta) * radius + world_depth / 2.0f;
-            pp[i] = math::acos(2 * random::uniform(0, 1.0) - 1);
-            pt[i] = random::uniform(0, math::PI2);
+            pp[i] = math::acos(2 * math::random_uniform(0, 1.0) - 1);
+            pt[i] = math::random_uniform(0, math::PI2);
             pb[i] = 100000000; // particle ID 100 million means no pair.
         }
     };
