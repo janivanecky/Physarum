@@ -40,12 +40,12 @@ int main(int argc, char **argv)
 
     // Set up window
     uint32_t window_width = 1400, window_height = 800;
- 	Window window = platform::get_window("Physarum", window_width, window_height);
-    assert(platform::is_window_valid(&window));
+    HWND window = platform::get_window("Physarum", window_width, window_height);
+    assert(platform::is_window_valid(window));
 
     // Init graphics
     graphics::init();
-    graphics::init_swap_chain(&window);
+    graphics::init_swap_chain(window, window_width, window_height);
 
     font::init();
     ui::init((float)window_width, (float)window_height);
