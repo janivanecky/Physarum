@@ -356,9 +356,10 @@ int main(int argc, char **argv)
                 radius -= input::mouse_scroll_delta() * 0.1f;
 
                 if (input::mouse_left_button_down()) {
-                    Vector2 dm = input::mouse_delta_position();
-                    azimuth += dm.x * 0.003f;
-                    polar -= dm.y * 0.003f;
+                    float dmx = input::mouse_delta_position_x();
+                    float dmy = input::mouse_delta_position_y();
+                    azimuth += dmx * 0.003f;
+                    polar -= dmy * 0.003f;
                     polar = math::clamp(polar, 0.02f, math::PI);
                 }
             }
