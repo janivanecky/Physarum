@@ -49,7 +49,6 @@ int main(int argc, char **argv)
     graphics::init_swap_chain(window, window_width, window_height);
 
     font::init();
-    ui::init();
     ui_draw::init((float)window_width, (float)window_height);
     ui::set_input_responsive(true);
 
@@ -603,13 +602,11 @@ int main(int argc, char **argv)
                 ui::end_panel(&panel);
             }
 
-            ui::end();
+            ui::end_frame();
         }
 
         graphics::swap_frames();
     }
-
-    ui::release();
 
     graphics::release(&render_target_window);
     graphics::release(&depth_buffer);
