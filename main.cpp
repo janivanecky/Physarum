@@ -521,7 +521,7 @@ int main(int argc, char **argv)
         if (show_ui) {
             graphics::set_render_targets_viewport(&render_target_window);
 
-            Panel panel = ui::start_panel("", Vector2(10, 10.0f), 420.0f);
+            Panel panel = ui::start_panel("", Vector2(10.0f, 10.0f));
 
             if (use_midi) {
                 config.sense_spread = midi::get_controller_state(AKAI_MIDIMIX_SLIDER_0) * math::PIHALF;
@@ -569,7 +569,7 @@ int main(int argc, char **argv)
 
             Vector4 panel_rect = ui::get_panel_rect(&panel);
             if(render_dof) {
-                Panel panel = ui::start_panel("", Vector2(panel_rect.x, panel_rect.y + panel_rect.w + 10), panel_rect.z);
+                Panel panel = ui::start_panel("", Vector2(panel_rect.x, panel_rect.y + panel_rect.w + 10));
 
                 bool dof_trail = dof_type == DofType::TRAIL;
                 bool dof_particles = dof_type == DofType::PARTICLES;
